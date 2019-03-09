@@ -9,10 +9,10 @@ compile :
 	gcc $(TARGET2).c -o $(TARGET2)
 
 execute_ls:
-	./$(TARGET1) ls -ll
+	./$(TARGET1) -v ls -ll
 
 execute_prog:
-	./$(TARGET1) ./$(TARGET2) -a -b -c
+	./$(TARGET1) -V ./$(TARGET2) -a -b -c
 
 clean :
 	rm $(TARGET1)

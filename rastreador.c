@@ -2,58 +2,94 @@
 #include <stdio.h>
 #include <sys/ptrace.h>
 #include <sys/wait.h>
+#include <sys/types.h>
+#include <string.h>
 
-#define opcion_rastreador1 "-V"
-#define opcion_rastreador2 "-v"
+#define TRACER_OPTION_1 "-V"
+#define TRACER_OPTION_2 "-v"
 #define MAX_ARGS 10
+#define TRUE 1
+#define FALSE 0
+#define CHILD_DEFAULT_PID 0
 
 char* PROG;
 char* PROG_ARGS[MAX_ARGS];
 int argument_count = 0;
+int TRACER_FLAG_1 = FALSE;
+int TRACER_FLAG_2 = FALSE;
+int NO_TRACER_FLAG = FALSE;
 
-void set_up_args_array();
+void initialize_args_array();
 void copy_args_starting_from(char* array1[], char* array2[], int init_pos);
 void set_null_pointer_at_end(char* array[]);
 void print_arguments(char* array[]);
+_Bool prog_at_position_has_arguments(int position);
+_Bool V_flag_found();
+void take_prog_arguments_from_argv(char* argv[]);
 
 int main(int argc, char *argv[]){
 
-	printf("La cantidad de argumentos son: %d\n", argc);
-
-	for(int i = 0; i < argc; i++){
-		printf("\nArgumento: %s\n", argv[i]);
-	}
-
 	argument_count = argc;
-	set_up_args_array();
+	initialize_args_array();
 
-	if((argv[1] != opcion_rastreador1) && (argv[1] != opcion_rastreador2)){
+	printf("\nThe first argument is: %s\n", argv[1]);
 
-		PROG = argv[1];
-		PROG_ARGS[0] = PROG;
-		printf("\nEl programa a ejecutar es %s\n", PROG);
-
-		// Prog has arguments
-		if(argc > 2){
-			copy_args_starting_from(PROG_ARGS, argv, 2);
-		}
-
-		set_null_pointer_at_end(PROG_ARGS);
+	if (!strcmp(argv[1], TRACER_OPTION_1)) { // -V flag found
+		printf("\nHas -V\n");
+		TRACER_FLAG_1 = TRUE;
+		PROG = argv[2]; // Save PROG name
+	}
+	else if (!strcmp(argv[1], TRACER_OPTION_2)) { // -v flag found
+		printf("\nHas -v\n");
+		TRACER_FLAG_2 = TRUE;
+		PROG = argv[2]; // Save PROG name
+	}
+	else{
+		printf("\nHas no -V or -v flag\n");
+		NO_TRACER_FLAG = TRUE;
+		PROG = argv[1]; // Save PROG name
 
 	}
 
+	PROG_ARGS[0] = PROG;
+	take_prog_arguments_from_argv(argv);
+	set_null_pointer_at_end(PROG_ARGS);
+
+	printf("\nEl programa a ejecutar es %s\n", PROG);
 	printf("\nLa lista de argumentos de %s son:\n", PROG);
 	print_arguments(PROG_ARGS);
 	printf("-------EJECUCION DEL OTRO PROGRAMA--------\n");
+
 	execvp(PROG, PROG_ARGS);
 
 	return 0;
 }
 
-void set_up_args_array(){
+void take_prog_arguments_from_argv(char* argv[]){
+	if (V_flag_found()) {
+		if (prog_at_position_has_arguments(2)) {
+			copy_args_starting_from(PROG_ARGS, argv, 3);
+		}
+	}
+	else{
+		if (prog_at_position_has_arguments(1)) {
+			copy_args_starting_from(PROG_ARGS, argv, 2);
+		}
+	}
+}
+
+_Bool V_flag_found(){
+	return TRACER_FLAG_1 || TRACER_FLAG_2;
+}
+
+void initialize_args_array(){
 	for(int i = 1; i < MAX_ARGS; i++){
 		PROG_ARGS[i] = "";
 	}
+}
+
+_Bool prog_at_position_has_arguments(int position){
+	return argument_count > (position+1);
 }
 
 // Take elements from array2 starting from init_pos and copy them to array1
