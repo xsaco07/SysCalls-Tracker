@@ -43,7 +43,7 @@ int main(int argc, char *argv[]){
 
   int proc_status;
   long sys_call_number;
-  long sys_call_called = 0;
+  long sys_call_called = FALSE;
   struct user_regs_struct regs;
 
   pid_t child_pid = fork();
@@ -53,7 +53,7 @@ int main(int argc, char *argv[]){
     exit(-1);
   }
 
-  else if (child_pid == CHILD_DEFAULT_PID) { // Child proccess
+  else if (child_pid == CHILD_DEFAULT_PID) { // This is the child proccess
 		printf("\nThe program %s will be executed\n", PROG);
 		printf("\nThe arguments of %s are:\n", PROG);
 		print_arguments(PROG_ARGS);
@@ -61,8 +61,8 @@ int main(int argc, char *argv[]){
     ptrace(PTRACE_TRACEME, CHILD_DEFAULT_PID, NULL, NULL);
     execvp(PROG, PROG_ARGS);
   }
-  else{ // Parent proccess
-    while (1) {
+  else{ // This is the parent proccess
+    while (TRUE) {
       waitpid(-1, &proc_status, 0); // Wait for the kernel to tell us that the child process state has
                                     // changed or been interrupted
 
@@ -71,23 +71,28 @@ int main(int argc, char *argv[]){
       }
 
       if (sys_call_called == FALSE) {
-        sys_call_called = TRUE;
+
         ptrace(PTRACE_GETREGS, child_pid, NULL, &regs); // Get access to the registers where sys calls info is
-        sys_call_number = regs.orig_rax;
+
+				sys_call_number = regs.orig_rax;
 
 				if (TRACER_FLAG_1) {
 					print_sys_call_info(sys_call_number);
-					getchar();
+					getchar(); // Wait for the user to press a key
 				}
 				else if (TRACER_FLAG_2) {
 					print_sys_call_info(sys_call_number);
 				}
+
         sys_call_seen(sys_call_number);
+
+				sys_call_called = TRUE;
+
       }
       else{
         sys_call_called = FALSE;
       }
-      ptrace(PTRACE_SYSCALL, child_pid, NULL, NULL);
+      ptrace(PTRACE_SYSCALL, child_pid, NULL, NULL); // Restart the the process with pid child_pid
     }
 
 		printf("\n-------FINAL SYS_CALLS TABLE--------\n");
