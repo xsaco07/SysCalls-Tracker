@@ -6,10 +6,14 @@
 #include <sys/user.h>
 #include <sys/reg.h>
 #include <stdlib.h>
+#include <termios.h>
+#include "SysCalls.h"
 
 #define CHILD_DEFAULT_PID 0
 
 int main(int argc, char *argv[]) {
+
+  initialize_sys_calls_array();
 
   int proc_status;
   long sys_call_number;
@@ -29,7 +33,6 @@ int main(int argc, char *argv[]) {
   }
   else{ // Parent proccess
     while (1) {
-
       waitpid(-1, &proc_status, 0); // Wait for the kernel to tell us that the child process state has
                                     // changed or been interrupted
 
@@ -41,7 +44,8 @@ int main(int argc, char *argv[]) {
         sys_call_called = 1;
         ptrace(PTRACE_GETREGS, child_pid, NULL, &regs); // Get access to the registers where sys calls info is
         sys_call_number = regs.orig_rax;
-        printf("The system call number is: %ld\n", sys_call_number);
+        //printf("The system call number is: %ld\n", sys_call_number);
+        sys_call_seen(sys_call_number);
       }
       else{
         sys_call_called = 0;
@@ -49,6 +53,8 @@ int main(int argc, char *argv[]) {
       ptrace(PTRACE_SYSCALL, child_pid, NULL, NULL);
     }
   }
+
+  print_sys_calls_array();
 
   return 0;
 }
