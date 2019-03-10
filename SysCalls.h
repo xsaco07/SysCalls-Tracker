@@ -8,19 +8,22 @@
 #include <sys/reg.h>
 #include <stdlib.h>
 
-#define SYS_CALLS_CONUT 190
+#define SYS_CALLS_CONUT 334
 
 struct sys_call{
-  long number;
+  int number;
   char* name;
   int times_called;
 };
 
 struct sys_call sys_calls_array[SYS_CALLS_CONUT];
 
-void initialize_sys_calls();
-void initialize_sys_call_struct(struct sys_call* sys_call_struct, long number, char* name, int times_called);
-void print_sys_call_info(struct sys_call* sys_call_struct);
-void print_array_sys_calls();
+void initialize_sys_calls_array();
+struct sys_call create_sys_call_struct(int number, char* name, int times_called);
+void print_sys_call_info(int sys_call_number);
+void print_sys_calls_array();
+void set_sys_calls_names();
+struct sys_call get_sys_call(int position);
+void sys_call_seen(int sys_call_number);
 
 #endif
