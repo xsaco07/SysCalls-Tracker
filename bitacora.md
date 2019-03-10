@@ -20,3 +20,5 @@ lograr rastrear todos los sys calls de un programa (solo el numero)
 investigar sobre la tabla de sys calls 
 planear el manejo de dicha tabla para lograr hacer el mapeo con el nombre y otros datos
 implementar modulod de sys calls para faciliar su manejo.(incluye .h y .c)
+FINALIZAR MODULO DE SYS CALLS
+imlementar el modulo de sys calls en el ejemplo original
