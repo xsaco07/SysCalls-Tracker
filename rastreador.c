@@ -54,7 +54,7 @@ int main(int argc, char *argv[]){
   }
 
   else if (child_pid == CHILD_DEFAULT_PID) { // This is the child proccess
-		printf("\nThe program %s will be executed\n", PROG);
+		printf("\nThe program '%s' will be executed\n", PROG);
 		printf("\nThe arguments of %s are:\n", PROG);
 		print_arguments(PROG_ARGS);
 		printf("-------PROG EXECUTION--------\n\n");
@@ -66,15 +66,19 @@ int main(int argc, char *argv[]){
       waitpid(-1, &proc_status, 0); // Wait for the kernel to tell us that the child process state has
                                     // changed or been interrupted
 
-      if(WIFEXITED(proc_status)){ // Check wether the process has finished or exit
+      if(WIFEXITED(proc_status) || WIFSIGNALED(proc_status)){ // Check wether the process has finished or exit
         break;
       }
 
       if (sys_call_called == FALSE) {
 
+				sys_call_called = TRUE;
+
         ptrace(PTRACE_GETREGS, child_pid, NULL, &regs); // Get access to the registers where sys calls info is
 
 				sys_call_number = regs.orig_rax;
+
+				sys_call_seen(sys_call_number);
 
 				if (TRACER_FLAG_1) {
 					print_sys_call_info(sys_call_number);
@@ -84,10 +88,6 @@ int main(int argc, char *argv[]){
 					print_sys_call_info(sys_call_number);
 				}
 
-        sys_call_seen(sys_call_number);
-
-				sys_call_called = TRUE;
-
       }
       else{
         sys_call_called = FALSE;
@@ -96,14 +96,13 @@ int main(int argc, char *argv[]){
     }
 
 		printf("\n-------FINAL SYS_CALLS TABLE--------\n");
-	  print_sys_calls_array();
+	  print_sys_calls_table();
   }
 
 	return 0;
 }
 
 void manage_arguments(char* argv[]){
-	printf("\nThe first argument is: %s\n", argv[1]);
 	manage_V_argument(argv);
 	PROG_ARGS[PROG_NAME_POSITION] = PROG;
 	take_prog_arguments_from_argv(argv);

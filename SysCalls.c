@@ -17,12 +17,16 @@ struct sys_call create_sys_call_struct(int number, char* name, int times_called)
   return sys_call_struct;
 }
 
-void print_sys_calls_array(){
+void print_sys_calls_table(){
+  printf("\nNombre\t\tId\t\tVeces llamada\n");
+  printf("---------------------------------------------\n");
   for (int i = 0; i < SYS_CALLS_CONUT; i++) {
     if (sys_calls_array[i].times_called > 0){
       print_sys_call_info(i);
+      printf("---------------------------------------------\n");
     }
   }
+  printf("Total %28d\n", 100);
 }
 
 void sys_call_seen(int sys_call_number){
@@ -31,13 +35,21 @@ void sys_call_seen(int sys_call_number){
 
 void print_sys_call_info(int sys_call_number){
   struct sys_call sys_call_struct = sys_calls_array[sys_call_number];
-  printf("\nName: %s\n", sys_call_struct.name);
-  printf("Sys call number: %d\n", sys_call_struct.number);
-  printf("Times Called: %d\n", sys_call_struct.times_called);
+  printf("%-16s", sys_call_struct.name);
+  printf("%-16d", sys_call_struct.number);
+  printf("%-16d\n", sys_call_struct.times_called);
 }
 
 struct sys_call get_sys_call(int position){
   return sys_calls_array[position];
+}
+
+int total_calls(){
+  int total = 0;
+  for(int i = 0; i < SYS_CALLS_CONUT; i++){
+    total += sys_calls_array[i].times_called;
+  }
+  return total;
 }
 
 void set_sys_calls_names(){
